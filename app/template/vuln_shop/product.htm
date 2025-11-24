@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product - Vuln Shop</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="page">
+
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-left">
+                <div class="logo">VULN SHOP</div>
+
+                <form id="searchForm" class="search-bar">
+                    <input type="text" id="searchQuery" placeholder="Я шукаю...">
+                    <button type="submit">Знайти</button>
+                </form>
+            </div>
+
+            <div class="topbar-right">
+                <a href="/" class="topbar-link">Магазин</a>
+                <a href="/login" class="topbar-link">Увійти</a>
+                <div class="topbar-icon" title="User">
+                    <span class="icon-circle">U</span>
+                </div>
+                <div class="topbar-icon" title="Cart">
+                    <span class="icon-circle">🛒</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Навігація</div>
+                <nav class="sidebar-nav">
+                    <a href="/">Магазин</a>
+                    <a href="/login">Логін</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Vuln демо</div>
+                <nav class="sidebar-nav">
+                    <a href="/demo/reflected-xss" target="_blank">Reflected XSS</a>
+                    <a href="/demo/balance/admin" target="_blank">IDOR</a>
+                    <a href="/demo/csrf-transfer" target="_blank">CSRF</a>
+                    <a href="/demo/upload" target="_blank">File Upload</a>
+                    <a href="/demo/ssrf?url=http://example.com" target="_blank">SSRF</a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="content">
+
+            <section class="card product-page">
+                <div id="product" class="product-main">
+                    <!-- JS підставить назву, опис, ціну -->
+                </div>
+
+                <div class="product-layout">
+
+                    <section class="product-side">
+                        <h3>Оформлення замовлення</h3>
+                        <form id="orderForm" class="form">
+                            <div class="form-control">
+                                <label for="qty">Кількість</label>
+                                <input type="number" id="qty" value="1" min="1">
+                            </div>
+                            <button type="submit" class="btn-primary">
+                                Купити (total клієнт контролює)
+                            </button>
+                        </form>
+                        <p id="orderStatus" class="status"></p>
+                    </section>
+
+                    <section class="product-side">
+                        <h3>Відгуки</h3>
+                        <div id="reviews" class="review-list">
+                            <!-- JS рендерить відгуки -->
+                        </div>
+
+                        <h4>Залишити відгук</h4>
+                        <form id="reviewForm" class="form">
+                            <div class="form-control">
+                                <label for="author">Автор</label>
+                                <input type="text" id="author" placeholder="Ваше ім'я">
+                            </div>
+                            <div class="form-control">
+                                <label for="text">Текст відгуку</label>
+                                <input type="text" id="text" placeholder="Будь-що, навіть <script>">
+                            </div>
+                            <button type="submit" class="btn-primary">Надіслати</button>
+                        </form>
+                    </section>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>Vuln Shop. Зроблено для навчання. Сайт спеціально містить вразливості.</p>
+    </footer>
+
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

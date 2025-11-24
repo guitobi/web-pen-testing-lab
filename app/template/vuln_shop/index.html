@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vuln Shop</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+<div class="page">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="topbar-left">
+                <div class="logo">VULN SHOP</div>
+
+                <form id="searchForm" class="search-bar">
+                    <input type="text" id="searchQuery" placeholder="Я шукаю...">
+                    <button type="submit">Знайти</button>
+                </form>
+            </div>
+
+            <div class="topbar-right">
+                <a href="/login" class="topbar-link">Увійти</a>
+                <div class="topbar-icon" title="User">
+                    <span class="icon-circle">U</span>
+                </div>
+                <div class="topbar-icon" title="Cart">
+                    <span class="icon-circle">🛒</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Категорії</div>
+                <nav class="sidebar-nav">
+                    <a href="#">Ноутбуки та комп'ютери</a>
+                    <a href="#">Смартфони, ТВ та електроніка</a>
+                    <a href="#">Товари для геймерів</a>
+                    <a href="#">Побутова техніка</a>
+                    <a href="#">Товари для дому</a>
+                    <a href="#">Одяг та аксесуари</a>
+                    <a href="#">Краса та здоров'я</a>
+                    <a href="#">Інше</a>
+                </nav>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Vuln демо</div>
+                <nav class="sidebar-nav">
+                    <a href="/demo/reflected-xss" target="_blank">Reflected XSS</a>
+                    <a href="/demo/balance/admin" target="_blank">IDOR</a>
+                    <a href="/demo/csrf-transfer" target="_blank">CSRF</a>
+                    <a href="/demo/upload" target="_blank">File Upload</a>
+                    <a href="/demo/ssrf?url=http://example.com" target="_blank">SSRF</a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="content">
+
+            <!-- HERO BANNER -->
+            <section class="hero">
+                <div class="hero-text">
+                    <h1>Чорна п'ятниця у Vuln Shop</h1>
+                    <p>
+                        Це навчальний магазин без захисту. Тут можна тренуватися шукати
+                        SQLi, XSS, CSRF, IDOR, логічні баги та інші проблеми без ризику для реальних користувачів.
+                    </p>
+                    <p class="hero-note">
+                        Увага: ніколи не розгортай цей код у продакшн.
+                    </p>
+                </div>
+                <div class="hero-badge">
+                    <span>-70%</span>
+                    <small>на безпеку</small>
+                </div>
+            </section>
+
+            <!-- PRODUCTS ONLY -->
+            <section class="card products-card" id="search">
+                <div class="card-header">
+                    <h2>Товари</h2>
+                    <p id="searchInfo" class="status"></p>
+                </div>
+                <div id="products" class="product-grid">
+                    <!-- JS рендерить товари -->
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <footer class="footer">
+        <p>Vuln Shop. Зроблено для навчання. Сайт спеціально містить вразливості.</p>
+    </footer>
+
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
