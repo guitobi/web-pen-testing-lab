@@ -7,6 +7,8 @@ from .db import init_db
 from . import auth, products, orders, admin
 from .tsrouter import router as demo_router
 
+
+
 app = FastAPI(title="Vulnerable Shop API")
 
 
@@ -42,3 +44,10 @@ def login_page():
 def product_page():
     # JS сам читає ?id= з query
     return FileResponse("app/template/vuln_shop/product.html")
+
+@app.get("/register", response_class=FileResponse)
+def register_page():
+    return FileResponse("app/template/vuln_shop/register.html")
+
+from . import auth_register
+app.include_router(auth_register.router)
