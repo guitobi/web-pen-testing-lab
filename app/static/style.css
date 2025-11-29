@@ -226,6 +226,12 @@ a {
     grid-template-columns: 320px 1fr;
     gap: 16px;
 }
+.product-thumb {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;   /* щоб картинка не розтягувалась дивно */
+    border-radius: 6px;
+}
 
 /* CARDS */
 

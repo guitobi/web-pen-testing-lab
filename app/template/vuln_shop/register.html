@@ -1,52 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Register - Vuln Shop</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-
-<body>
-<div class="page">
-
-    <header class="topbar">
-        <div class="topbar-inner">
-            <div class="topbar-left">
-                <div class="logo">VULN SHOP</div>
-            </div>
-            <div class="topbar-right">
-                <a href="/" class="topbar-link">Магазин</a>
-                <a href="/login" class="topbar-link">Увійти</a>
-            </div>
+﻿{% extends "vuln_shop/base.html" %}
+{% block title %}Register - Vuln Shop{% endblock %}
+{% block content %}
+    <section class="hero hero-small">
+        <div class="hero-text">
+            <h1>Реєстрація</h1>
+            <p>Форма вразлива до SQLi на /auth/register. Використовуйте це для демонстрації.</p>
         </div>
-    </header>
+    </section>
 
-    <main class="content">
-
-        <section class="card login-card">
-            <h2>Реєстрація</h2>
-
-            <form id="registerForm" class="form">
-                <div class="form-control">
-                    <label>Логін</label>
-                    <input type="text" id="reg_username" required>
-                </div>
-
-                <div class="form-control">
-                    <label>Пароль</label>
-                    <input type="password" id="reg_password" required>
-                </div>
-
-                <button type="submit" class="btn-primary">Створити акаунт</button>
-            </form>
-
-            <p id="registerStatus" class="status"></p>
-        </section>
-
-    </main>
-</div>
-
-<script src="/static/app.js"></script>
-
-</body>
-</html>
+    <section class="card login-card" id="register">
+        <h2>Створити акаунт</h2>
+        <form id="registerForm" class="form">
+            <div class="form-control">
+                <label for="reg_username">Логін</label>
+                <input type="text" id="reg_username" placeholder="Ваш username" required>
+            </div>
+            <div class="form-control">
+                <label for="reg_password">Пароль</label>
+                <input type="password" id="reg_password" placeholder="Ваш пароль" required>
+            </div>
+            <button type="submit" class="btn-primary">Зареєструватися</button>
+        </form>
+        <p id="registerStatus" class="status"></p>
+    </section>
+{% endblock %}
