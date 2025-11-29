@@ -1,70 +1,93 @@
-from typing import Optional
-from fastapi import APIRouter, HTTPException, Depends
-from app.db import get_db
-from app.schemas import ProductCreate, ReviewCreate
-from app.auth import get_current_user
+# app/products.py
+from __future__ import annotations
 
-router = APIRouter(prefix="/products", tags=["products"])
+import sqlite3
 
-@router.get("")
-def list_products(q: Optional[str] = None):
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+
+from .db import get_db
+
+router = APIRouter(tags=["products"])
+
+templates = Jinja2Templates(directory="app/template")
+
+
+@router.get("/products")
+def list_products(q: str | None = None):
+    """
+    Returns a list of products. The q filter is intentionally concatenated to SQL to demo SQLi.
+    """
     conn = get_db()
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
     if q:
-        query = f"SELECT * FROM products WHERE name LIKE '%{q}%' OR description LIKE '%{q}%'"
+        query = (
+            "SELECT id, name, description, price FROM products "
+            f"WHERE name LIKE '%{q}%' OR description LIKE '%{q}%'"
+        )
     else:
-        query = "SELECT * FROM products"
+        query = "SELECT id, name, description, price FROM products"
 
-    rows = cur.execute(query).fetchall()
+    cur.execute(query)
+    rows = cur.fetchall()
     conn.close()
     return [dict(r) for r in rows]
 
-@router.get("/{product_id}")
-def get_product(product_id: int):
+
+@router.get("/product", response_class=HTMLResponse)
+def product_page(request: Request, id: int):
+    """
+    Product detail page: intentionally vulnerable to SQLi via id and stored XSS via reviews.
+    """
     conn = get_db()
+    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
-    query = f"SELECT * FROM products WHERE id = {product_id}"
-    row = cur.execute(query).fetchone()
-    conn.close()
-    if not row:
+
+    # VULN: SQL Injection (id concatenated into SQL)
+    cur.execute(f"SELECT * FROM products WHERE id = {id}")
+    product = cur.fetchone()
+    if not product:
+        conn.close()
         raise HTTPException(status_code=404, detail="Product not found")
-    return dict(row)
 
-@router.post("")
-def create_product(data: ProductCreate, current=Depends(get_current_user)):
-    if not current or current["role"] != "admin":
-        raise HTTPException(status_code=403, detail="Admin only")
-
-    conn = get_db()
-    cur = conn.cursor()
-    query = (
-        f"INSERT INTO products (name, description, price) "
-        f"VALUES ('{data.name}', '{data.description}', {data.price})"
+    # Stored XSS rendered via {{ r.text|safe }}
+    cur.execute(
+        f"SELECT author, text, '' AS created_at "
+        f"FROM reviews WHERE product_id = {product['id']} ORDER BY id DESC"
     )
-    cur.execute(query)
-    conn.commit()
-    pid = cur.lastrowid
+    reviews = cur.fetchall()
     conn.close()
-    return {"id": pid, **data.dict()}
 
-@router.post("/{product_id}/reviews")
-def add_review(product_id: int, data: ReviewCreate):
+    return templates.TemplateResponse(
+        "vuln_shop/product.html",
+        {
+            "request": request,
+            "product": product,
+            "reviews": reviews,
+        },
+    )
+
+
+@router.post("/add_review")
+async def add_review(request: Request, id: int):
+    """
+    Stores a review for the product with no sanitization (intentional stored XSS playground).
+    """
+    form = await request.form()
+    author = form.get("author", "")
+    text = form.get("text", "")
+
     conn = get_db()
     cur = conn.cursor()
-    query = (
+
+    cur.execute(
         f"INSERT INTO reviews (product_id, author, text) "
-        f"VALUES ({product_id}, '{data.author}', '{data.text}')"
+        f"VALUES ({id}, '{author}', '{text}')"
     )
-    cur.execute(query)
     conn.commit()
     conn.close()
-    return {"status": "ok"}
 
-@router.get("/{product_id}/reviews")
-def list_reviews(product_id: int):
-    conn = get_db()
-    cur = conn.cursor()
-    rows = cur.execute(f"SELECT * FROM reviews WHERE product_id = {product_id}").fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
+    return RedirectResponse(url=f"/product?id={id}", status_code=302)

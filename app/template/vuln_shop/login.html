@@ -1,98 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - Vuln Shop</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-
-<body>
-<div class="page">
-
-    <header class="topbar">
-        <div class="topbar-inner">
-            <div class="topbar-left">
-                <div class="logo">VULN SHOP</div>
-
-                <form id="searchForm" class="search-bar">
-                    <input type="text" id="searchQuery" placeholder="Я шукаю...">
-                    <button type="submit">Знайти</button>
-                </form>
-            </div>
-
-            <div class="topbar-right">
-                <a href="/" class="topbar-link">Магазин</a>
-                <div class="topbar-icon" title="User">
-                    <span class="icon-circle">U</span>
-                </div>
-                <div class="topbar-icon" title="Cart">
-                    <span class="icon-circle">🛒</span>
-                </div>
-            </div>
+{% extends "vuln_shop/base.html" %}
+{% block title %}Login - Vuln Shop{% endblock %}
+{% block content %}
+    <section class="hero hero-small">
+        <div class="hero-text">
+            <h1>�����������</h1>
+            <p>
+                �������������� ����� ������ ���� ��� ���������. ���� = ����� � localStorage, ������ �� ��������.
+            </p>
         </div>
-    </header>
+    </section>
 
-    <div class="layout">
-
-        <aside class="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Навігація</div>
-                <nav class="sidebar-nav">
-                    <a href="/">Магазин</a>
-                    <a href="/login">Логін</a>
-                </nav>
+    <section class="card login-card" id="login">
+        <h2>����</h2>
+        <form id="loginForm" class="form">
+            <div class="form-control">
+                <label for="username">����</label>
+                <input type="text" id="username" placeholder="��� username" required>
             </div>
-
-            <div class="sidebar-section">
-                <div class="sidebar-title">Vuln демо</div>
-                <nav class="sidebar-nav">
-                    <a href="/demo/reflected-xss" target="_blank">Reflected XSS</a>
-                    <a href="/demo/balance/admin" target="_blank">IDOR</a>
-                    <a href="/demo/csrf-transfer" target="_blank">CSRF</a>
-                    <a href="/demo/upload" target="_blank">File Upload</a>
-                    <a href="/demo/ssrf?url=http://example.com" target="_blank">SSRF</a>
-                </nav>
+            <div class="form-control">
+                <label for="password">������</label>
+                <input type="password" id="password" placeholder="��� ������" required>
             </div>
-        </aside>
-
-        <main class="content">
-
-            <section class="hero hero-small">
-                <div class="hero-text">
-                    <h1>Авторизація</h1>
-                    <p>
-                        Тут використовується спеціально слабка схема входу:
-                        паролі зберігаються у відкритому вигляді, токен - просто username.
-                    </p>
-                </div>
-            </section>
-
-            <section class="card login-card" id="login">
-                <h2>Вхід (слабка автентифікація)</h2>
-                <form id="loginForm" class="form">
-                    <div class="form-control">
-                        <label for="username">Логін</label>
-                        <input type="text" id="username" placeholder="Введіть username" required>
-                    </div>
-                    <div class="form-control">
-                        <label for="password">Пароль</label>
-                        <input type="password" id="password" placeholder="Введіть пароль" required>
-                    </div>
-                    <button type="submit" class="btn-primary">Увійти</button>
-                    <button class="btn-reg"><a href="/register" class="btn-link">Створити акаунт</a></button>
-                </form>
-                <p id="loginStatus" class="status"></p>
-            </section>
-
-        </main>
-    </div>
-
-    <footer class="footer">
-        <p>Vuln Shop. Зроблено для навчання. Сайт спеціально містить вразливості.</p>
-    </footer>
-
-</div>
-
-<script src="/static/app.js"></script>
-</body>
-</html>
+            <button type="submit" class="btn-primary">�����</button>
+            <button class="btn-reg"><a href="/register" class="btn-link">�� ���� �������?</a></button>
+        </form>
+        <p id="loginStatus" class="status"></p>
+    </section>
+{% endblock %}

@@ -1,15 +1,17 @@
 # app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.templating import Jinja2Templates
 
 from .db import init_db
-from . import auth, products, orders, admin
+from . import auth, products, orders, admin, auth_register
 from .tsrouter import router as demo_router
 
+# Run: uvicorn app.main:app --reload
 
 
 app = FastAPI(title="Vulnerable Shop API")
+templates = Jinja2Templates(directory="app/template")
 
 
 @app.on_event("startup")
@@ -23,31 +25,32 @@ app.include_router(products.router)
 app.include_router(orders.router)
 app.include_router(admin.router)
 app.include_router(demo_router)
+app.include_router(auth_register.router)
 
 # static
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
-# ---------- HTML сторінки ----------
-
-@app.get("/", response_class=FileResponse)
-def index_page():
-    return FileResponse("app/template/vuln_shop/index.html")
-
-
-@app.get("/login", response_class=FileResponse)
-def login_page():
-    return FileResponse("app/template/vuln_shop/login.html")
+# ---------- HTML pages ----------
+@app.get("/")
+def index_page(request: Request):
+    return templates.TemplateResponse(
+        "vuln_shop/index.html",
+        {"request": request},
+    )
 
 
-@app.get("/product", response_class=FileResponse)
-def product_page():
-    # JS сам читає ?id= з query
-    return FileResponse("app/template/vuln_shop/product.html")
+@app.get("/login")
+def login_page(request: Request):
+    return templates.TemplateResponse(
+        "vuln_shop/login.html",
+        {"request": request},
+    )
 
-@app.get("/register", response_class=FileResponse)
-def register_page():
-    return FileResponse("app/template/vuln_shop/register.html")
 
-from . import auth_register
-app.include_router(auth_register.router)
+@app.get("/register")
+def register_page(request: Request):
+    return templates.TemplateResponse(
+        "vuln_shop/register.html",
+        {"request": request},
+    )
