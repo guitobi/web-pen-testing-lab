@@ -1,92 +1,100 @@
-﻿<!-- app/template/vuln_shop/base.html -->
+<!-- app/template/vuln_shop/base.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{% block title %}Vuln Shop{% endblock %}</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css" />
     {% block head_extra %}{% endblock %}
-</head>
-<body>
-<div class="page">
-    <header class="topbar">
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
         <div class="topbar-inner">
-            <div class="topbar-left">
-                <div class="logo"><a href="/" style="color:inherit;text-decoration:none;">VULN SHOP</a></div>
-                <form id="searchForm" class="search-bar">
-                    <input type="text" id="searchQuery" placeholder="Search...">
-                    <button type="submit">Find</button>
-                </form>
+          <div class="topbar-left">
+            <div class="logo">
+              <a href="/" style="color: inherit; text-decoration: none"
+                >VULN SHOP</a
+              >
             </div>
-            <div class="topbar-right">
-                <a id="accountLink" href="/login" class="topbar-link">Login</a>
-                <div class="topbar-icon" title="User"><span class="icon-circle" id="accountInitial">U</span></div>
-                <div class="topbar-icon" title="Cart"><span class="icon-circle">C</span></div>
+            <form id="searchForm" class="search-bar">
+              <input type="text" id="searchQuery" placeholder="Search..." />
+              <button type="submit">Find</button>
+            </form>
+          </div>
+          <div class="topbar-right">
+            <a id="accountLink" href="/login" class="topbar-link">Login</a>
+            <div class="topbar-icon" title="User">
+              <span class="icon-circle" id="accountInitial">U</span>
             </div>
+            <div class="topbar-icon" title="Cart">
+              <span class="icon-circle">C</span>
+            </div>
+          </div>
         </div>
-    </header>
+      </header>
 
-    <div class="layout">
+      <div class="layout">
         {% block sidebar %}
         <aside class="sidebar">
-            <div class="sidebar-section">
-                <div class="sidebar-title">Navigation</div>
-                <nav class="sidebar-nav">
-                    <a href="/">Home</a>
-                    <a href="/login">Login</a>
-                    <a href="/register">Register</a>
-                </nav>
-            </div>
-            <div class="sidebar-section">
-                <div class="sidebar-title">Vuln demos</div>
-                <nav class="sidebar-nav">
-                    <a href="/demo/reflected-xss" target="_blank">Reflected XSS</a>
-                    <a href="/demo/balance/admin" target="_blank">IDOR</a>
-                    <a href="/demo/csrf-transfer" target="_blank">CSRF</a>
-                    <a href="/demo/upload" target="_blank">File Upload</a>
-                    <a href="/demo/ssrf?url=http://example.com" target="_blank">SSRF</a>
-                </nav>
-            </div>
+          <div class="sidebar-section">
+            <div class="sidebar-title">Navigation</div>
+            <nav class="sidebar-nav">
+              <a href="/">Home</a>
+              <a href="/login">Login</a>
+              <a href="/register">Register</a>
+            </nav>
+          </div>
+          <div class="sidebar-section">
+            <div class="sidebar-title">Vuln demos</div>
+            <nav class="sidebar-nav">
+              <a href="/demo/reflected-xss" target="_blank">Reflected XSS</a>
+              <a href="/demo/balance/admin" target="_blank">IDOR</a>
+              <a href="/demo/csrf-transfer" target="_blank">CSRF</a>
+              <a href="/demo/upload" target="_blank">File Upload</a>
+              <a href="/demo/ssrf?url=http://example.com" target="_blank"
+                >SSRF</a
+              >
+            </nav>
+          </div>
         </aside>
         {% endblock %}
 
-        <main class="content">
-            {% block content %}{% endblock %}
-        </main>
+        <main class="content">{% block content %}{% endblock %}</main>
+      </div>
+
+      <footer class="footer">
+        <p>Vuln Shop. Deliberately vulnerable for training. Use carefully.</p>
+      </footer>
     </div>
 
-    <footer class="footer">
-        <p>Vuln Shop. Deliberately vulnerable for training. Use carefully.</p>
-    </footer>
-</div>
-
-<script src="/static/app.js"></script>
-<script>
-// Toggle account link based on token stored in localStorage (token == username)
-(function() {
-    const accountLink = document.getElementById('accountLink');
-    const accountInitial = document.getElementById('accountInitial');
-    if (!accountLink) return;
-    const token = localStorage.getItem('token');
-    if (token) {
-        accountLink.textContent = `Logout (${token})`;
-        accountLink.href = '#';
-        if (accountInitial) {
+    <script src="/static/app.js"></script>
+    <script>
+      // Toggle account link based on token stored in localStorage (token == username)
+      (function () {
+        const accountLink = document.getElementById("accountLink");
+        const accountInitial = document.getElementById("accountInitial");
+        if (!accountLink) return;
+        const token = localStorage.getItem("token");
+        if (token) {
+          accountLink.textContent = `Logout (${token})`;
+          accountLink.href = "#";
+          if (accountInitial) {
             accountInitial.textContent = token.charAt(0).toUpperCase();
-        }
-        accountLink.onclick = (e) => {
+          }
+          accountLink.onclick = (e) => {
             e.preventDefault();
-            localStorage.removeItem('token');
+            localStorage.removeItem("token");
             location.reload();
-        };
-    } else {
-        accountLink.textContent = 'Login';
-        accountLink.href = '/login';
-        if (accountInitial) accountInitial.textContent = 'U';
-        accountLink.onclick = null;
-    }
-})();
-</script>
-{% block scripts %}{% endblock %}
-</body>
+          };
+        } else {
+          accountLink.textContent = "Login";
+          accountLink.href = "/login";
+          if (accountInitial) accountInitial.textContent = "U";
+          accountLink.onclick = null;
+        }
+      })();
+    </script>
+    {% block scripts %}{% endblock %}
+  </body>
 </html>

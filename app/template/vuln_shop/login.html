@@ -1,29 +1,31 @@
-{% extends "vuln_shop/base.html" %}
-{% block title %}Login - Vuln Shop{% endblock %}
-{% block content %}
-    <section class="hero hero-small">
-        <div class="hero-text">
-            <h1>Авторизація</h1>
-            <p>
-                Використовуйте слабкі облікові дані для тренувань. Логін = токен у localStorage, пароль не хешується.
-            </p>
-        </div>
-    </section>
+{% extends "vuln_shop/base.html" %} {% block title %}Login - Vuln Shop{%
+endblock %} {% block content %}
+<section class="hero hero-small">
+  <div class="hero-text">
+    <h1>РђРІС‚РѕСЂРёР·Р°С†С–СЏ</h1>
+    <p>
+      Р’РёРєРѕСЂРёСЃС‚РѕРІСѓР№С‚Рµ СЃР»Р°Р±РєС– РѕР±Р»С–РєРѕРІС– РґР°РЅС– РґР»СЏ С‚СЂРµРЅСѓРІР°РЅСЊ. Р›РѕРіС–РЅ = С‚РѕРєРµРЅ Сѓ
+      localStorage, РїР°СЂРѕР»СЊ РЅРµ С…РµС€СѓС”С‚СЊСЃСЏ.
+    </p>
+  </div>
+</section>
 
-    <section class="card login-card" id="login">
-        <h2>Вхід</h2>
-        <form id="loginForm" class="form">
-            <div class="form-control">
-                <label for="username">Логін</label>
-                <input type="text" id="username" placeholder="Ваш username" required>
-            </div>
-            <div class="form-control">
-                <label for="password">Пароль</label>
-                <input type="password" id="password" placeholder="Ваш пароль" required>
-            </div>
-            <button type="submit" class="btn-primary">Увійти</button>
-            <button class="btn-reg"><a href="/register" class="btn-link">Ще немає акаунту?</a></button>
-        </form>
-        <p id="loginStatus" class="status"></p>
-    </section>
+<section class="card login-card" id="login">
+  <h2>Р’С…С–Рґ</h2>
+  <form id="loginForm" class="form">
+    <div class="form-control">
+      <label for="username">Р›РѕРіС–РЅ</label>
+      <input type="text" id="username" placeholder="Р’Р°С€ username" required />
+    </div>
+    <div class="form-control">
+      <label for="password">РџР°СЂРѕР»СЊ</label>
+      <input type="password" id="password" placeholder="Р’Р°С€ РїР°СЂРѕР»СЊ" required />
+    </div>
+    <button type="submit" class="btn-primary">РЈРІС–Р№С‚Рё</button>
+    <button class="btn-reg">
+      <a href="/register" class="btn-link">Р©Рµ РЅРµРјР°С” Р°РєР°СѓРЅС‚Сѓ?</a>
+    </button>
+  </form>
+  <p id="loginStatus" class="status"></p>
+</section>
 {% endblock %}
