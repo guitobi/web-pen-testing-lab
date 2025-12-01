@@ -1,19 +1,32 @@
+# app/auth.py
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Request, Depends
 from app.db import get_db
 from app.schemas import LoginRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-def get_current_user(authorization: Optional[str] = Header(None)):
-    if not authorization:
+# !!! ГОЛОВНА ЗМІНА: Додали request: Request, щоб читати куки !!!
+def get_current_user(request: Request, authorization: Optional[str] = Header(None)):
+    token = None
+    
+    # 1. Спочатку шукаємо в заголовку (для fetch запитів)
+    if authorization:
+        parts = authorization.split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+        else:
+            token = authorization
+    
+    # 2. Якщо в заголовку пусто, шукаємо в COOKIES (для браузера)
+    if not token:
+        token = request.cookies.get("token")
+
+    if not token:
         return None
 
-    parts = authorization.split()
-    if len(parts) == 2 and parts[0].lower() == "bearer":
-        username = parts[1]
-    else:
-        username = authorization
+    # У цьому CTF токен = юзернейм
+    username = token
 
     conn = get_db()
     cur = conn.cursor()
