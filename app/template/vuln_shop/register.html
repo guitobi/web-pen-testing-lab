@@ -1,26 +1,38 @@
-﻿{% extends "vuln_shop/base.html" %}
-{% block title %}Register - Vuln Shop{% endblock %}
-{% block content %}
-    <section class="hero hero-small">
-        <div class="hero-text">
-            <h1>Реєстрація</h1>
-            <p>Форма вразлива до SQLi на /auth/register. Використовуйте це для демонстрації.</p>
-        </div>
-    </section>
+﻿{% extends "vuln_shop/base.html" %} {% block title %}Register - Vuln Shop{%
+endblock %} {% block content %}
+<section class="hero hero-small">
+  <div class="hero-text">
+    <h1>Реєстрація</h1>
+    <p>
+      Форма вразлива до SQLi на /auth/register. Використовуйте це для
+      демонстрації.
+    </p>
+  </div>
+</section>
 
-    <section class="card login-card" id="register">
-        <h2>Створити акаунт</h2>
-        <form id="registerForm" class="form">
-            <div class="form-control">
-                <label for="reg_username">Логін</label>
-                <input type="text" id="reg_username" placeholder="Ваш username" required>
-            </div>
-            <div class="form-control">
-                <label for="reg_password">Пароль</label>
-                <input type="password" id="reg_password" placeholder="Ваш пароль" required>
-            </div>
-            <button type="submit" class="btn-primary">Зареєструватися</button>
-        </form>
-        <p id="registerStatus" class="status"></p>
-    </section>
+<section class="card login-card" id="register">
+  <h2>Створити акаунт</h2>
+  <form id="registerForm" class="form">
+    <div class="form-control">
+      <label for="reg_username">Логін</label>
+      <input
+        type="text"
+        id="reg_username"
+        placeholder="Ваш username"
+        required
+      />
+    </div>
+    <div class="form-control">
+      <label for="reg_password">Пароль</label>
+      <input
+        type="password"
+        id="reg_password"
+        placeholder="Ваш пароль"
+        required
+      />
+    </div>
+    <button type="submit" class="btn-primary">Зареєструватися</button>
+  </form>
+  <p id="registerStatus" class="status"></p>
+</section>
 {% endblock %}

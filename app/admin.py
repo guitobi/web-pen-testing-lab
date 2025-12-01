@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
-from app.db import get_db
+from fastapi.responses import RedirectResponse
+from app.db import get_db, init_db
 from app.auth import get_current_user
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -14,3 +15,12 @@ def admin_list_users(current=Depends(get_current_user)):
     rows = cur.execute("SELECT id, username, password, role FROM users").fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+# --- CTF RESTORE ---
+@router.post("/restore_db")
+def restore_database():
+    try:
+        init_db()
+        return RedirectResponse(url="/", status_code=302)
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}

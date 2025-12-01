@@ -1,31 +1,31 @@
-{% extends "vuln_shop/base.html" %}
-{% block title %}Vuln Shop{% endblock %}
-{% block content %}
-    <!-- HERO BANNER -->
-    <section class="hero">
-        <div class="hero-text">
-            <h1>Ласкаво просимо у Vuln Shop</h1>
-            <p>
-                Тут навмисно зібрані класичні вразливості для навчання та демонстрації: SQLi, XSS, CSRF, IDOR та інші.
-            </p>
-            <p class="hero-note">
-                Використовуйте у закритому середовищі. Не застосовуйте в бойових системах.
-            </p>
-        </div>
-        <div class="hero-badge">
-            <span>-70%</span>
-            <small>тільки сьогодні</small>
-        </div>
-    </section>
+{% extends "vuln_shop/base.html" %} {% block title %}Vuln Shop{% endblock %} {%
+block content %}
+<!-- HERO BANNER -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Р›Р°СЃРєР°РІРѕ РїСЂРѕСЃРёРјРѕ Сѓ Vuln Shop</h1>
+    <p>
+      РўСѓС‚ РЅР°РІРјРёСЃРЅРѕ Р·С–Р±СЂР°РЅС– РєР»Р°СЃРёС‡РЅС– РІСЂР°Р·Р»РёРІРѕСЃС‚С– РґР»СЏ РЅР°РІС‡Р°РЅРЅСЏ С‚Р° РґРµРјРѕРЅСЃС‚СЂР°С†С–С—:
+      SQLi, XSS, CSRF, IDOR С‚Р° С–РЅС€С–.
+    </p>
+    <p class="hero-note">
+      Р’РёРєРѕСЂРёСЃС‚РѕРІСѓР№С‚Рµ Сѓ Р·Р°РєСЂРёС‚РѕРјСѓ СЃРµСЂРµРґРѕРІРёС‰С–. РќРµ Р·Р°СЃС‚РѕСЃРѕРІСѓР№С‚Рµ РІ Р±РѕР№РѕРІРёС… СЃРёСЃС‚РµРјР°С….
+    </p>
+  </div>
+  <div class="hero-badge">
+    <span>-70%</span>
+    <small>С‚С–Р»СЊРєРё СЃСЊРѕРіРѕРґРЅС–</small>
+  </div>
+</section>
 
-    <!-- PRODUCTS ONLY -->
-    <section class="card products-card" id="search">
-        <div class="card-header">
-            <h2>Товари</h2>
-            <p id="searchInfo" class="status"></p>
-        </div>
-        <div id="products" class="product-grid">
-            <!-- JS підставить товари -->
-        </div>
-    </section>
+<!-- PRODUCTS ONLY -->
+<section class="card products-card" id="search">
+  <div class="card-header">
+    <h2>РўРѕРІР°СЂРё</h2>
+    <p id="searchInfo" class="status"></p>
+  </div>
+  <div id="products" class="product-grid">
+    <!-- JS РїС–РґСЃС‚Р°РІРёС‚СЊ С‚РѕРІР°СЂРё -->
+  </div>
+</section>
 {% endblock %}
