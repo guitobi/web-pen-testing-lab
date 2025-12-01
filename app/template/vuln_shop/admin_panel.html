@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Panel - Vulnerable Shop</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <style>
+      .admin-container {
+        max-width: 800px;
+        margin: 40px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      .danger-zone {
+        border: 2px solid #ff4444;
+        padding: 20px;
+        border-radius: 8px;
+        background: #fff5f5;
+        margin-top: 30px;
+      }
+      .danger-zone h3 {
+        color: #cc0000;
+        margin-top: 0;
+      }
+      .btn-danger {
+        background: #ff4444;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .btn-danger:hover {
+        background: #cc0000;
+      }
+      input[type="text"] {
+        padding: 8px;
+        width: 300px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="logo">ADMIN PANEL</div>
+        <div class="topbar-right">
+          <a href="/" style="color: white">На головну</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-container">
+      <h1>Вітаємо, {{ user.username }}!</h1>
+      <p>Це закрита зона управління магазином.</p>
+
+      <hr />
+
+      <h2>Список користувачів</h2>
+      <table
+        border="1"
+        cellpadding="10"
+        style="border-collapse: collapse; width: 100%"
+      >
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>Role</th>
+        </tr>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td>
+            <b style="color: red">{{ u.role }}</b>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+
+      <div class="danger-zone">
+        <h3>⚠️ System Maintenance (SQL Direct)</h3>
+        <p>
+          Використовуйте цю функцію для очищення застарілих таблиць (наприклад,
+          <code>orders</code>, <code>reviews</code>).
+        </p>
+
+        <form action="/admin/cleanup" method="post">
+          <label><b>Назва таблиці:</b></label
+          ><br />
+          <input
+            type="text"
+            name="table_name"
+            placeholder="Введіть назву таблиці (напр. orders)"
+            required
+          />
+          <button type="submit" class="btn-danger">
+            🗑️ Очистити / Видалити
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
