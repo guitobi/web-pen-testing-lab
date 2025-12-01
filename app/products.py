@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import sqlite3
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Form, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-# !!! ВАЖЛИВО: Імпортуємо змінну з назвою таблиці з db.py
+# Імпортуємо змінну з назвою таблиці
 from .db import get_db, REAL_PRODUCT_TABLE
+from app.auth import get_current_user
 
 router = APIRouter(tags=["products"])
 
@@ -20,57 +21,41 @@ def list_products(q: str | None = None):
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
-    # --- WAF: Блокуємо пробіли ---
-    if q and " " in q:
-        conn.close()
-        return [{
-            "id": 0, 
-            "name": "⛔ WAF BLOCKED", 
-            "description": "Security Error: Spaces are illegal characters! Use comments /**/ instead.", 
-            "price": 0.0
-        }]
+    # --- WAF: ВИМКНЕНО (для зручності навчання) ---
+    # if q and " " in q:
+    #     conn.close()
+    #     return ...
 
-    # !!! ВИКОРИСТОВУЄМО REAL_PRODUCT_TABLE ЗАМІСТЬ 'products'
+    # !!! ВАЖЛИВО: додаємо image у вибірку (для відображення картинок)
     if q:
         query = (
-            f"SELECT id, name, description, price FROM {REAL_PRODUCT_TABLE} "
+            f"SELECT id, name, description, price, image FROM {REAL_PRODUCT_TABLE} "
             f"WHERE name LIKE '%{q}%' OR description LIKE '%{q}%'"
         )
     else:
-        query = f"SELECT id, name, description, price FROM {REAL_PRODUCT_TABLE}"
+        query = f"SELECT id, name, description, price, image FROM {REAL_PRODUCT_TABLE}"
 
     rows = []
     try:
         cur.execute(query)
         rows = cur.fetchall()
     except sqlite3.Warning:
-        # Дозволяємо DROP через скрипт (якщо юзер ввів крапку з комою)
         try:
-            print(f"\n[DEBUG] ⚠️ Warning caught. Attempting script execution for: {q}")
+            # Спроба виконати скрипт, якщо SQLite видав попередження (Stack Queries)
+            print(f"\n[DEBUG] ⚠️ Warning caught. Attempting script execution...")
             cur.executescript(query)
             conn.commit()
-            print("[DEBUG] ✅ Script executed successfully! (Table potentially dropped)")
-        except Exception as script_err:
-             print(f"[ERROR] ❌ Script execution failed: {script_err}")
+        except Exception:
              pass
     except Exception as e:
-        # !!! КРИТИЧНЕ ВИПРАВЛЕННЯ !!!
-        # Якщо таблиця вже видалена, ми НЕ повинні ковтати цю помилку.
-        # Ми повинні прокинути її далі, щоб main.py показав екран перемоги.
+        # Якщо таблицю видалили - прокидаємо помилку для екрану перемоги
         if "no such table" in str(e).lower():
             raise e
-
-        # Ловимо інші помилки, але теж пробуємо скрипт (на випадок DROP)
         try:
-            print(f"\n[DEBUG] ⚠️ Exception caught ({e}). Attempting script execution...")
             cur.executescript(query)
             conn.commit()
-            print("[DEBUG] ✅ Script executed successfully! (Table potentially dropped)")
-        except Exception as script_err:
-            print(f"[ERROR] ❌ Script execution failed: {script_err}")
+        except Exception:
             pass
-        
-        print(f"[INFO] Original SQL Error: {e}")
 
     conn.close()
     return [dict(r) for r in rows]
@@ -83,7 +68,6 @@ def product_page(request: Request, id: int):
     cur = conn.cursor()
 
     try:
-        # !!! ТУТ ТЕЖ ЗМІНЮЄМО НАЗВУ НА СЕКРЕТНУ
         cur.execute(f"SELECT * FROM {REAL_PRODUCT_TABLE} WHERE id = {id}")
         product = cur.fetchone()
     except sqlite3.OperationalError:
@@ -119,11 +103,9 @@ async def add_review(request: Request, id: int):
 
     conn = get_db()
     cur = conn.cursor()
-
     try:
         cur.execute(
-            f"INSERT INTO reviews (product_id, author, text) "
-            f"VALUES ({id}, '{author}', '{text}')"
+            f"INSERT INTO reviews (product_id, author, text) VALUES ({id}, '{author}', '{text}')"
         )
         conn.commit()
     except sqlite3.OperationalError:
@@ -132,3 +114,40 @@ async def add_review(request: Request, id: int):
 
     conn.close()
     return RedirectResponse(url=f"/product?id={id}", status_code=302)
+
+
+# --- ВРАЗЛИВИЙ ЕНДПОІНТ (BROKEN ACCESS CONTROL) ---
+@router.post("/product/update")
+def update_product_info(
+    id: int = Form(...), 
+    name: str = Form(...), 
+    price: float = Form(...), 
+    current=Depends(get_current_user)
+):
+    """
+    Вразливість: Broken Access Control (BAC).
+    Будь-який залогінений користувач може редагувати товари.
+    """
+    # 1. Перевірка: чи користувач взагалі залогінений?
+    if not current:
+        raise HTTPException(status_code=401, detail="Login required")
+
+    # 2. ВРАЗЛИВІСТЬ: ТУТ МАЛА БУТИ ПЕРЕВІРКА НА АДМІНА!
+    # if current['role'] != 'admin':
+    #     raise HTTPException(status_code=403, detail="Admins only")
+    # АЛЕ ЇЇ НЕМАЄ :)
+    
+    conn = get_db()
+    cur = conn.cursor()
+
+    try:
+        # Також тут є SQL Injection через параметр name
+        query = f"UPDATE {REAL_PRODUCT_TABLE} SET name = '{name}', price = {price} WHERE id = {id}"
+        cur.execute(query)
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return {"status": "error", "detail": str(e)}
+
+    conn.close()
+    return RedirectResponse(url=f"/product?id={id}", status_code=303)
