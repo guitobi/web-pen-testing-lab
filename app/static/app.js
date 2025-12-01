@@ -1,76 +1,117 @@
 console.log("app.js loaded");
 
-// --- 1. Перехоплювач fetch (Авторизація для API) ---
+// ============================================================
+// 0. ЗАХИСТ МАРШРУТІВ
+// ============================================================
+(function checkAccess() {
+  const path = window.location.pathname;
+  const token = localStorage.getItem("token");
+  if (path.startsWith("/admin") && !token) {
+    window.location.href = "/login";
+  }
+})();
+
+// ============================================================
+// 1. ФУНКЦІЯ ВИХОДУ
+// ============================================================
+async function logout() {
+  console.warn("Performing full logout...");
+
+  try {
+    await fetch("/auth/logout");
+  } catch (e) {
+    console.error("Server logout failed", e);
+  }
+
+  localStorage.clear();
+  sessionStorage.clear();
+
+  const cookies = document.cookie.split(";");
+  cookies.forEach((cookie) => {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+  });
+
+  window.location.href = "/login";
+}
+
+// ============================================================
+// 2. FETCH INTERCEPTOR
+// ============================================================
 const originalFetch = window.fetch;
 window.fetch = async function (url, options = {}) {
   const token = localStorage.getItem("token");
-  if (token) {
-    options.headers = {
-      ...(options.headers || {}),
-      Authorization: "Bearer " + token,
-    };
-  }
-  return originalFetch(url, options);
+  if (token)
+    options.headers = { ...options.headers, Authorization: "Bearer " + token };
+
+  const response = await originalFetch(url, options);
+  if (response.status === 401 && !url.includes("/login")) logout();
+  return response;
 };
 
-// --- 2. Логіка появи кнопки АДМІНА (Нове!) ---
-function checkAdminButton() {
+// ============================================================
+// 3. UI UPDATE (Кнопки)
+// ============================================================
+function updateAuthUI() {
+  const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const topbarRight = document.querySelector(".topbar-right");
 
-  // Якщо ми адмін і знайшли праву частину шапки
-  if (role === "admin" && topbarRight) {
-    // Перевіряємо, чи кнопки ще немає (щоб не дублювати)
-    if (!document.getElementById("admin-btn")) {
+  if (!token) {
+    if (role) localStorage.clear();
+    return;
+  }
+
+  if (token && topbarRight) {
+    if (role === "admin" && !document.getElementById("admin-btn")) {
       const btn = document.createElement("a");
       btn.id = "admin-btn";
       btn.href = "/admin";
       btn.innerText = "🔥 Admin Panel";
-
-      // Стилі прямо тут
-      btn.style.backgroundColor = "#ff4444";
-      btn.style.color = "white";
-      btn.style.padding = "8px 12px";
-      btn.style.borderRadius = "20px";
-      btn.style.fontWeight = "bold";
-      btn.style.textDecoration = "none";
-      btn.style.marginRight = "10px";
-
-      // Додаємо кнопку на початок блоку справа
+      btn.style.cssText =
+        "background:#ff4444;color:white;padding:8px 12px;border-radius:20px;font-weight:bold;text-decoration:none;margin-right:10px;";
       topbarRight.prepend(btn);
+    }
+    if (!document.getElementById("logout-btn")) {
+      const logoutBtn = document.createElement("a");
+      logoutBtn.id = "logout-btn";
+      logoutBtn.href = "#";
+      logoutBtn.innerText = "Вийти";
+      logoutBtn.style.cssText =
+        "color:#ccc;margin-left:15px;font-size:14px;cursor:pointer;text-decoration:underline;";
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        logout();
+      });
+      topbarRight.appendChild(logoutBtn);
     }
   }
 }
+document.addEventListener("DOMContentLoaded", updateAuthUI);
 
-// Запускаємо перевірку при завантаженні сторінки
-document.addEventListener("DOMContentLoaded", checkAdminButton);
-
-// --- 3. LOGIN (Вхід) ---
+// ============================================================
+// 4. LOGIN
+// ============================================================
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
-
+    localStorage.clear();
     const res = await fetch("/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
-
     const data = await res.json();
     const out = document.getElementById("loginStatus");
-
     if (res.ok) {
-      // ЗБЕРІГАЄМО ТОКЕН І РОЛЬ
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
-
-      // Встановлюємо куку для доступу до адмінки (ВАЖЛИВО!)
       document.cookie = `token=${data.token}; path=/; max-age=3600`;
-
-      out.innerText = "Успішний вхід!";
       window.location.href = "/";
     } else {
       out.innerText = "Помилка: " + data.detail;
@@ -78,14 +119,15 @@ if (loginForm) {
   });
 }
 
-// --- 4. REGISTER (Реєстрація) ---
+// ============================================================
+// 5. REGISTER
+// ============================================================
 const registerForm = document.getElementById("registerForm");
 if (registerForm) {
   registerForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const username = document.getElementById("reg_username").value;
     const password = document.getElementById("reg_password").value;
-
     const res = await fetch("/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -98,8 +140,9 @@ if (registerForm) {
   });
 }
 
-// --- 5. PRODUCTS LIST (Список товарів + Пошук) ---
-const PRODUCTS_IMG = "/static/img/523634223.webp";
+// ============================================================
+// 6. PRODUCTS LIST (З обробкою картинок)
+// ============================================================
 const productsContainer = document.getElementById("products");
 const searchForm = document.getElementById("searchForm");
 const searchInput = document.getElementById("searchQuery");
@@ -108,33 +151,39 @@ const searchInfo = document.getElementById("searchInfo");
 async function loadProducts(query = "") {
   if (!productsContainer) return;
   let url = "/products";
-  if (query && query.trim() !== "") {
+  if (query && query.trim() !== "")
     url += "?q=" + encodeURIComponent(query.trim());
-  }
+
   try {
     const res = await fetch(url);
+    if (res.status === 401) return;
     const data = await res.json();
     productsContainer.innerHTML = "";
 
     if (!Array.isArray(data) || data.length === 0) {
       productsContainer.innerHTML = "<p>Нічого не знайдено.</p>";
-      if (searchInfo)
-        searchInfo.innerText = query ? `Результати для "${query}": 0` : "";
+      if (searchInfo) searchInfo.innerText = query ? `Results: 0` : "";
       return;
     }
 
-    if (searchInfo) {
+    if (searchInfo)
       searchInfo.innerText = query
-        ? `Результати для "${query}" (${data.length})`
-        : `Усього товарів: ${data.length}`;
-    }
+        ? `Results: ${data.length}`
+        : `Total: ${data.length}`;
 
     data.forEach((p) => {
       const card = document.createElement("article");
       card.className = "product-card";
-      // Тут залишається XSS вразливість для інших завдань (innerHTML)
+
+      // Логіка відображення картинок
+      let imgFile = p.image || "523634223.webp";
+      if (!imgFile.startsWith("/") && !imgFile.startsWith("http")) {
+        imgFile = "/static/img/" + imgFile;
+      }
+
+      // XSS тут залишено навмисно
       card.innerHTML = `
-                <img src="${PRODUCTS_IMG}" alt="product" class="product-thumb">
+                <img src="${imgFile}" alt="product" class="product-thumb">
                 <b>${p.name}</b>
                 <p class="product-desc">${p.description}</p>
                 <a href="/product?id=${p.id}">Open</a>
@@ -142,16 +191,39 @@ async function loadProducts(query = "") {
       productsContainer.appendChild(card);
     });
   } catch (err) {
-    console.error("Failed to load products:", err);
+    console.error(err);
   }
 }
 
-if (searchForm && productsContainer) {
+if (searchForm) {
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
     loadProducts(searchInput ? searchInput.value : "");
   });
 }
-if (productsContainer) {
-  loadProducts();
+if (productsContainer) loadProducts();
+
+// ============================================================
+// 7. DEVELOPER TOOLS (Вразливість BAC)
+// ============================================================
+// TODO: Видалити цю функцію перед релізом! Вона дозволяє міняти ціни!
+async function updateProduct(id, name, price) {
+  console.log(`Updating product ${id}...`);
+  const formData = new FormData();
+  formData.append("id", id);
+  formData.append("name", name);
+  formData.append("price", price);
+
+  // Відправляємо запит. Завдяки fetch interceptor, заголовок Authorization додасться сам.
+  const res = await fetch("/product/update", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (res.ok) {
+    console.log("Success! Reloading page...");
+    window.location.reload();
+  } else {
+    console.error("Error updating product. Check console/network.");
+  }
 }

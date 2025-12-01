@@ -107,7 +107,7 @@ endblock %} {% block head_extra %}
 
   <section class="product-card-full">
     <div class="product-top">
-      <img src="/static/img/523634223.webp" alt="product" />
+      <img src="/static/img/{{ product.image }}" alt="{{ product.name }}" />
       <div class="product-main">
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>

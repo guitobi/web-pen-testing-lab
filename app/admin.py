@@ -1,10 +1,9 @@
-# app/admin.py
 import sqlite3
-from fastapi import APIRouter, HTTPException, Depends, Form, Request
+from fastapi import APIRouter, HTTPException, Depends, Form, Request, Response
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-# !!! ДОДАЛИ ІМПОРТ REAL_PRODUCT_TABLE
+# Імпортуємо назву секретної таблиці для перевірки
 from app.db import get_db, init_db, REAL_PRODUCT_TABLE
 from app.auth import get_current_user
 
@@ -12,17 +11,26 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/template")
 
 @router.get("/", response_class=HTMLResponse)
-def admin_panel_page(request: Request, current=Depends(get_current_user)):
+def admin_panel_page(request: Request, response: Response, current=Depends(get_current_user)):
     """
     Головна сторінка адмінки.
+    Відображається ТІЛЬКИ якщо роль = admin.
     """
     if not current or current["role"] != "admin":
         raise HTTPException(status_code=403, detail="Access Denied: Admins Only")
+
+    # --- BACKEND FIX: ЗАБОРОНА КЕШУВАННЯ ---
+    # Це критично важливо, щоб після Logout браузер не показував
+    # стару сторінку з кешу при натисканні кнопки "Назад".
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
 
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
     
+    # Отримуємо список юзерів для таблиці
     users_rows = cur.execute("SELECT id, username, role FROM users").fetchall()
     conn.close()
 
@@ -53,7 +61,7 @@ def cleanup_table(request: Request, table_name: str = Form(...), current=Depends
         cur.execute(query)
         conn.commit()
 
-        # 2. !!! НОВА ПЕРЕВІРКА !!!
+        # 2. МИТТЄВА ПЕРЕВІРКА ПЕРЕМОГИ
         # Ми намагаємося прочитати дані з ГОЛОВНОЇ таблиці товарів.
         # Якщо ми щойно її видалили (через table_name), цей запит впаде з помилкою.
         cur.execute(f"SELECT 1 FROM {REAL_PRODUCT_TABLE} LIMIT 1")
