@@ -1,91 +1,104 @@
 console.log("app.js loaded");
 
-///////////////////////////////////////////////////////////////////////////////
-// Перехоплювач fetch — додає токен автоматично (слабка авторизація)
-///////////////////////////////////////////////////////////////////////////////
-
+// --- 1. Перехоплювач fetch (Авторизація для API) ---
 const originalFetch = window.fetch;
 window.fetch = async function (url, options = {}) {
-    const token = localStorage.getItem("token");
-
-    if (token) {
-        options.headers = {
-            ...(options.headers || {}),
-            "Authorization": "Bearer " + token
-        };
-    }
-
-    return originalFetch(url, options);
+  const token = localStorage.getItem("token");
+  if (token) {
+    options.headers = {
+      ...(options.headers || {}),
+      Authorization: "Bearer " + token,
+    };
+  }
+  return originalFetch(url, options);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// LOGIN
-///////////////////////////////////////////////////////////////////////////////
+// --- 2. Логіка появи кнопки АДМІНА (Нове!) ---
+function checkAdminButton() {
+  const role = localStorage.getItem("role");
+  const topbarRight = document.querySelector(".topbar-right");
 
+  // Якщо ми адмін і знайшли праву частину шапки
+  if (role === "admin" && topbarRight) {
+    // Перевіряємо, чи кнопки ще немає (щоб не дублювати)
+    if (!document.getElementById("admin-btn")) {
+      const btn = document.createElement("a");
+      btn.id = "admin-btn";
+      btn.href = "/admin";
+      btn.innerText = "🔥 Admin Panel";
+
+      // Стилі прямо тут
+      btn.style.backgroundColor = "#ff4444";
+      btn.style.color = "white";
+      btn.style.padding = "8px 12px";
+      btn.style.borderRadius = "20px";
+      btn.style.fontWeight = "bold";
+      btn.style.textDecoration = "none";
+      btn.style.marginRight = "10px";
+
+      // Додаємо кнопку на початок блоку справа
+      topbarRight.prepend(btn);
+    }
+  }
+}
+
+// Запускаємо перевірку при завантаженні сторінки
+document.addEventListener("DOMContentLoaded", checkAdminButton);
+
+// --- 3. LOGIN (Вхід) ---
 const loginForm = document.getElementById("loginForm");
-
 if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        const res = await fetch("/auth/login", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-        const out = document.getElementById("loginStatus");
-
-        if (res.ok) {
-            // VULN: токен = username, лежить у localStorage без шифрування
-            localStorage.setItem("token", data.token);
-            out.innerText = "Успішний вхід!";
-            window.location.href = "/";
-        } else {
-            out.innerText = "Помилка: " + data.detail;
-        }
+    const res = await fetch("/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
     });
+
+    const data = await res.json();
+    const out = document.getElementById("loginStatus");
+
+    if (res.ok) {
+      // ЗБЕРІГАЄМО ТОКЕН І РОЛЬ
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+      // Встановлюємо куку для доступу до адмінки (ВАЖЛИВО!)
+      document.cookie = `token=${data.token}; path=/; max-age=3600`;
+
+      out.innerText = "Успішний вхід!";
+      window.location.href = "/";
+    } else {
+      out.innerText = "Помилка: " + data.detail;
+    }
+  });
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// REGISTER (через вразливий SQL /auth/register)
-///////////////////////////////////////////////////////////////////////////////
-
+// --- 4. REGISTER (Реєстрація) ---
 const registerForm = document.getElementById("registerForm");
-
 if (registerForm) {
-    registerForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("reg_username").value;
+    const password = document.getElementById("reg_password").value;
 
-        const username = document.getElementById("reg_username").value;
-        const password = document.getElementById("reg_password").value;
-
-        // VULN: бекенд будує SQL через f-рядки, можливий SQLi
-        const res = await fetch("/auth/register", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ username, password })
-        });
-
-        const data = await res.json();
-        const out = document.getElementById("registerStatus");
-
-        if (res.ok) {
-            out.innerText = "Акаунт створено. Тепер можна увійти.";
-        } else {
-            out.innerText = "Помилка: " + data.detail;
-        }
+    const res = await fetch("/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
     });
+    const data = await res.json();
+    const out = document.getElementById("registerStatus");
+    if (res.ok) out.innerText = "Акаунт створено. Тепер можна увійти.";
+    else out.innerText = "Помилка: " + data.detail;
+  });
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// PRODUCTS LIST + SEARCH
-///////////////////////////////////////////////////////////////////////////////
-
+// --- 5. PRODUCTS LIST (Список товарів + Пошук) ---
 const PRODUCTS_IMG = "/static/img/523634223.webp";
 const productsContainer = document.getElementById("products");
 const searchForm = document.getElementById("searchForm");
@@ -93,68 +106,52 @@ const searchInput = document.getElementById("searchQuery");
 const searchInfo = document.getElementById("searchInfo");
 
 async function loadProducts(query = "") {
-    if (!productsContainer) return;
+  if (!productsContainer) return;
+  let url = "/products";
+  if (query && query.trim() !== "") {
+    url += "?q=" + encodeURIComponent(query.trim());
+  }
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    productsContainer.innerHTML = "";
 
-    let url = "/products";
-    if (query && query.trim() !== "") {
-        // на бекенді теж без параметризації -> SQLi
-        url += "?q=" + encodeURIComponent(query.trim());
+    if (!Array.isArray(data) || data.length === 0) {
+      productsContainer.innerHTML = "<p>Нічого не знайдено.</p>";
+      if (searchInfo)
+        searchInfo.innerText = query ? `Результати для "${query}": 0` : "";
+      return;
     }
 
-    try {
-        const res = await fetch(url);
-        const data = await res.json();
+    if (searchInfo) {
+      searchInfo.innerText = query
+        ? `Результати для "${query}" (${data.length})`
+        : `Усього товарів: ${data.length}`;
+    }
 
-        productsContainer.innerHTML = "";
-
-        if (!Array.isArray(data) || data.length === 0) {
-            productsContainer.innerHTML = "<p>Нічого не знайдено.</p>";
-            if (searchInfo) {
-                searchInfo.innerText = query
-                    ? `Результати пошуку для "${query}": 0`
-                    : "";
-            }
-            return;
-        }
-
-        if (searchInfo) {
-            searchInfo.innerText = query
-                ? `Результати пошуку для "${query}" (знайдено: ${data.length})`
-                : `Усього товарів: ${data.length}`;
-        }
-
-        data.forEach((p) => {
-            const card = document.createElement("article");
-            card.className = "product-card";
-
-            // VULN: опис вставляється через innerHTML -> stored XSS з БД
-            card.innerHTML = `
+    data.forEach((p) => {
+      const card = document.createElement("article");
+      card.className = "product-card";
+      // Тут залишається XSS вразливість для інших завдань (innerHTML)
+      card.innerHTML = `
                 <img src="${PRODUCTS_IMG}" alt="product" class="product-thumb">
                 <b>${p.name}</b>
                 <p class="product-desc">${p.description}</p>
                 <a href="/product?id=${p.id}">Open</a>
             `;
-
-            productsContainer.appendChild(card);
-        });
-    } catch (err) {
-        console.error("Failed to load products:", err);
-        if (searchInfo) {
-            searchInfo.innerText = "Помилка завантаження товарів";
-        }
-    }
-}
-
-// Пошук з верхнього бару
-if (searchForm && productsContainer) {
-    searchForm.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const q = searchInput ? searchInput.value : "";
-        loadProducts(q);
+      productsContainer.appendChild(card);
     });
+  } catch (err) {
+    console.error("Failed to load products:", err);
+  }
 }
 
-// Автоматично підтягуємо товари при заході на головну
+if (searchForm && productsContainer) {
+  searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    loadProducts(searchInput ? searchInput.value : "");
+  });
+}
 if (productsContainer) {
-    loadProducts();
+  loadProducts();
 }
