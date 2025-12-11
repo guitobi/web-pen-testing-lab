@@ -1,4 +1,4 @@
-п»ї{% extends "vuln_shop/base.html" %} {% block title %}{{ product.name }}{%
+{% extends "vuln_shop/base.html" %} {% block title %}{{ product.name }}{%
 endblock %} {% block head_extra %}
 <style>
   body {
@@ -35,8 +35,8 @@ endblock %} {% block head_extra %}
     align-items: flex-start;
   }
   .product-top img {
-    width: 140px;
-    height: 140px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -107,7 +107,7 @@ endblock %} {% block head_extra %}
 
   <section class="product-card-full">
     <div class="product-top">
-      <img src="/static/img/523634223.webp" alt="product" />
+      <img src="/static/img/{{ product.image }}" alt="{{ product.name }}" />
       <div class="product-main">
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>

@@ -29,42 +29,47 @@ def seed_users(cur):
         )
 
 def seed_products(cur):
-    # 1. Вразливі та CTF товари (XSS ПРИБРАНО — тепер це безпечні описи)
     vuln_products = [
-        (1, "Phone", "<b>Cheap phone</b>", 100.0), # HTML залишили для краси, але без скриптів
-        (2, "Laptop", "Standard Laptop Description", 999.0),
-        (3, "Gaming Mouse", "Ultra DPI mouse.", 49.99),
-        (4, "4K TV", "Big 4K TV.", 799.0),
-        (5, "Headphones", "Nice headphones.", 59.0),
-        (6, "CTF Hint", "You found the hidden table! Now DROP it to win.", 0.0),
+        (1, "Phone", "<b>Cheap phone</b>", 100.0, "523634223.webp"),
+        (2, "Laptop", "Standard Laptop Description", 999.0, "noutbuk-microsoft-surface-laptop-6-135-zjw-00026-platinum-1024x768.webp"),
+        (3, "Gaming Mouse", "Ultra DPI mouse.", 49.99, "1200W-18684-Black-0-NKDH7709BlackBagFront3.jpg"),
+        (4, "4K TV", "Big 4K TV.", 799.0, "big-tv.jpg"),
+        (5, "Headphones", "Nice headphones.", 59.0, "fa0575c2-1397-4467-ba48-e18f84ed6c19.jpg"),
+        (6, "CTF Hint", "You found the hidden table! Now DROP it to win.", 0.0, "favicon.png"),
     ]
 
-    # 2. Звичайні товари (Магазин виглядає наповненим)
     real_products = [
-        (10, "Lenovo ThinkBook 15", "Категорія: Ноутбуки та комп'ютери. Офісний ноутбук для роботи.", 18999.0),
-        (11, "HP Pavilion Gaming", "Категорія: Ноутбуки та комп'ютери. Ігровий ноутбук середнього класу.", 27999.0),
-        (12, "Acer Aspire 3", "Категорія: Ноутбуки та комп'ютери. Бюджетний ноутбук для навчання.", 14999.0),
-        (20, "Samsung Galaxy S21", "Категорія: Смартфони, ТВ та електроніка. Флагманський смартфон.", 15999.0),
-        (21, "iPhone 12", "Категорія: Смартфони, ТВ та електроніка. Смартфон Apple.", 19999.0),
-        (22, "Xiaomi Redmi Note 11", "Категорія: Смартфони, ТВ та електроніка. Бюджетний смартфон.", 7999.0),
-        (30, "Logitech G102", "Категорія: Товари для геймерів. Ігрова мишка.", 899.0),
-        (31, "HyperX Cloud II", "Категорія: Товари для геймерів. Ігрові навушники.", 2999.0),
-        (32, "Razer Cynosa", "Категорія: Товари для геймерів. Мембранна геймерська клавіатура.", 1599.0),
-        (40, "Philips 7000", "Категорія: Побутова техніка. Електробритва для щоденного користування.", 1299.0),
-        (41, "Braun 5030s", "Категорія: Побутова техніка. Бритва з тримером.", 2399.0),
-        (42, "Dyson V8", "Категорія: Побутова техніка. Бездротовий пилосмок.", 8999.0),
-        (50, "Casio F91W", "Категорія: Одяг та аксесуари. Легендарний цифровий годинник.", 499.0),
-        (51, "RayBan Aviator", "Категорія: Одяг та аксесуари. Сонцезахисні окуляри.", 3499.0),
-        (52, "Nike Backpack", "Категорія: Одяг та аксесуари. Міський рюкзак для щоденного користування.", 1199.0),
+        (10, "Lenovo ThinkBook 15", "Категорія: Ноутбуки та комп'ютери. Офісний ноутбук для роботи.", 18999.0, "37-lenovo-thinkbook-15-hero.avif"),
+        (11, "HP Pavilion Gaming", "Категорія: Ноутбуки та комп'ютери. Ігровий ноутбук середнього класу.", 27999.0, "21001517599382.jpg"),
+        (12, "Acer Aspire 3", "Категорія: Ноутбуки та комп'ютери. Бюджетний ноутбук для навчання.", 14999.0, "21218-xW.jpg"),
+
+        (20, "Samsung Galaxy S21", "Категорія: Смартфони, ТВ та електроніка. Флагманський смартфон.", 15999.0, "201230150040321987.webp"),
+        (21, "iPhone 12", "Категорія: Смартфони, ТВ та електроніка. Смартфон Apple.", 19999.0, "210428160019905946.webp"),
+        (22, "Xiaomi Redmi Note 11", "Категорія: Смартфони, ТВ та електроніка. Бюджетний смартфон.", 7999.0, "333623502.webp"),
+
+        (30, "Logitech G102", "Категорія: Товари для геймерів. Ігрова мишка.", 899.0, "1400_gallery_1716317775110291_0.webp"),
+        (31, "HyperX Cloud II", "Категорія: Товари для геймерів. Ігрові навушники.", 2999.0, "fa0575c2-1397-4467-ba48-e18f84ed6c19.jpg"),
+        (32, "Razer Cynosa", "Категорія: Товари для геймерів. Мембранна геймерська клавіатура.", 1599.0, "3470132825.jpg"),
+
+        (40, "Philips 7000", "Категорія: Побутова техніка. Електробритва.", 1299.0, "main-1-528x396.jpg"),
+        (41, "Braun 5030s", "Категорія: Побутова техніка. Бритва з тримером.", 2399.0, "sovershenstvu_est_predel_-_braun_5030_s.jpg"),
+        (42, "Dyson V8", "Категорія: Побутова техніка. Бездротовий пилосмок.", 8999.0, "pilosos_Dyson_V8_Total_Clean-947237-600x600.jpg"),
+
+        (50, "Casio F91W", "Категорія: Одяг та аксесуари. Годинник.", 499.0, "image.avif"),
+        (51, "RayBan Aviator", "Категорія: Одяг та аксесуари. Окуляри.", 3499.0, "getimg.jpg"),
+        (52, "Nike Backpack", "Категорія: Одяг та аксесуари. Міський рюкзак.", 1199.0, "1200W-18684-Black-0-NKDH7709BlackBagFront3.jpg"),
     ]
 
     all_products = vuln_products + real_products
 
-    for pid, name, desc, price in all_products:
-        # Використовуємо REAL_PRODUCT_TABLE
+    for pid, name, desc, price, img in all_products:
         cur.execute(
-            f"INSERT OR IGNORE INTO {REAL_PRODUCT_TABLE} (id, name, description, price) VALUES (?, ?, ?, ?)",
-            (pid, name, desc, price),
+            f"""
+            INSERT OR IGNORE INTO {REAL_PRODUCT_TABLE}
+            (id, name, description, price, image)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (pid, name, desc, price, img),
         )
 
 def seed_reviews(cur):
@@ -133,7 +138,9 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             description TEXT,
-            price REAL
+            price REAL,
+            image TEXT
+
         )
         """
     )
